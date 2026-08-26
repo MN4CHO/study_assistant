@@ -56,7 +56,7 @@ CERTIFICATIONS_DIR_NAME = os.getenv("CERTIFICATIONS_DIR_NAME", "Certificaciones"
 
 # Subcarpeta (dentro de cada certificacion) donde se guarda el reporte de
 # priorizacion de temas de esa certificacion.
-TEMAS_IMPORTANTES_DIR_NAME = os.getenv("TEMAS_IMPORTANTES_DIR_NAME", "01_Temas_importantes")
+TEMAS_IMPORTANTES_DIR_NAME = os.getenv("TEMAS_IMPORTANTES_DIR_NAME", "Temas_importantes")
 
 # Carpeta raiz (directamente bajo OBSIDIAN_VAULT_PATH) cuyas notas se excluyen
 # por completo del pipeline (ni cuestionario ni analisis de temas), porque no

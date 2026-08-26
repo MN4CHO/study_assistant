@@ -44,7 +44,12 @@ class GeminiProvider(LLMProvider):
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
-                max_output_tokens=max_tokens,
+                # Los modelos Gemini "piensan" antes de responder, y esos tokens
+                # de razonamiento se descuentan del mismo max_output_tokens (no
+                # todos los modelos permiten desactivar el thinking). Por eso
+                # pedimos mas margen del que ocuparia solo el texto visible, para
+                # que la respuesta no se corte a mitad de camino.
+                max_output_tokens=max(max_tokens, 4000),
             ),
         ))
         usage = response.usage_metadata
@@ -67,7 +72,7 @@ class GeminiProvider(LLMProvider):
             contents=[image_part, user_prompt],
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
-                max_output_tokens=max_tokens,
+                max_output_tokens=max(max_tokens, 4000),
             ),
         ))
         usage = response.usage_metadata

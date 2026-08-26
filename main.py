@@ -88,10 +88,10 @@ def _group_notes_by_certification(notes: list) -> tuple[dict[str, list], list]:
     return cert_groups, ungrouped
 
 
-def _write_priorizacion_report(text_provider, notes: list, report_path: Path) -> None:
+def _write_priorizacion_report(text_provider, cert_name: str, notes: list, report_path: Path) -> None:
     notes_content = {n.title: n.content for n in notes}
     scores = rank_notes_by_density(notes_content)
-    recommendation = suggest_priorities(text_provider, scores)
+    recommendation = suggest_priorities(text_provider, cert_name, notes_content, scores)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(recommendation, encoding="utf-8")
     print(f"Reporte de priorizacion guardado en: {report_path}")
@@ -112,11 +112,11 @@ def run_pattern_analysis(text_provider) -> None:
             config.OBSIDIAN_VAULT_PATH / config.CERTIFICATIONS_DIR_NAME
             / cert_name / config.TEMAS_IMPORTANTES_DIR_NAME / config.PRIORIZACION_FILENAME
         )
-        _write_priorizacion_report(text_provider, cert_notes, report_path)
+        _write_priorizacion_report(text_provider, cert_name, cert_notes, report_path)
 
     if ungrouped:
         report_path = config.OUTPUT_PATH / config.PRIORIZACION_FILENAME
-        _write_priorizacion_report(text_provider, ungrouped, report_path)
+        _write_priorizacion_report(text_provider, "estas notas de estudio", ungrouped, report_path)
 
 
 def main():
