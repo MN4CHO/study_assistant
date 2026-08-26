@@ -21,6 +21,7 @@ from ingestion.obsidian_reader import get_pending_notes, mark_notes_processed, r
 from ingestion.handwriting_reader import transcribe_folder
 from processing.quiz_generator import generate_quiz
 from analysis.topic_prioritizer import rank_notes_by_density, suggest_priorities
+from sync.notion_sync import sync_tasks_to_notion
 
 
 def build_providers():
@@ -125,6 +126,8 @@ def main():
                          help="Omite el paso de transcripcion de notas manuscritas")
     parser.add_argument("--skip-analysis", action="store_true",
                          help="Omite el analisis de priorizacion de temas")
+    parser.add_argument("--sync-notion", action="store_true",
+                         help="Sincroniza Tareas/001_Tareas.md con la base de datos de Notion")
     args = parser.parse_args()
 
     text_provider, vision_provider = build_providers()
@@ -144,6 +147,9 @@ def main():
 
     if not args.skip_analysis:
         run_pattern_analysis(text_provider)
+
+    if args.sync_notion:
+        sync_tasks_to_notion(text_provider)
 
     print("\nPipeline completado. Resultados en:", config.OUTPUT_PATH)
 
