@@ -97,6 +97,10 @@ study_assistant/
 │   └── quiz_generator.py
 ├── analysis/
 │   └── topic_prioritizer.py    # TF-IDF + LLM -> priorizacion
+├── sync/
+│   ├── task_parser.py           # markdown (plugin Tasks) -> objetos Task
+│   ├── notion_client.py         # Task -> propiedades de Notion (esquema real via API)
+│   └── notion_sync.py           # orquesta el parseo, LLM y subida a Notion
 └── data/vault/                 # notas de ejemplo (reemplazar por tu vault real)
 ```
 
@@ -107,6 +111,7 @@ study_assistant/
 | `quiz_generator.py`, `handwriting_reader.py` | **Automatizacion** |
 | `topic_prioritizer.py` | **Identificacion de patrones** |
 | `topic_prioritizer.suggest_priorities()` (recomendaciones basadas en tu propio historial de apuntes) | **Personalizacion** |
+| `sync/notion_sync.py` (el LLM elige el valor de cada propiedad de Notion que no venga explicito en la tarea, entre las opciones reales de la base) | **Toma de decisiones** |
 
 ## 7. Sincronizacion con Notion
 
@@ -132,6 +137,11 @@ valores de las propiedades que no vengan explicitas en el texto
    Si los nombres de tus propiedades no coinciden con los defaults
    (`Status`, `Fecha`, `Prioridad`, `Contexto`, `Energía`, `Proyecto`,
    `URL`), sobreescribelos con `NOTION_PROP_*` (ver `.env.example`).
+
+   Propiedades de tipo `relation` (ej. si `Proyecto` en tu base es una
+   relacion a otra base, no texto) no se completan automaticamente: se
+   omiten con un aviso en consola, porque requieren el page ID de la
+   pagina relacionada, no un valor de texto libre.
 
 **Uso:**
 
