@@ -50,31 +50,58 @@ def rank_notes_by_density(notes_content: dict[str, str], top_n_terms: int = 5) -
     return sorted(scores, key=lambda s: s.score, reverse=True)
 
 
-def suggest_priorities(provider: LLMProvider, topic_scores: list[TopicScore]) -> str:
+def suggest_priorities(
+    provider: LLMProvider,
+    cert_name: str,
+    notes_content: dict[str, str],
+    topic_scores: list[TopicScore],
+) -> str:
     """
-    Combina la señal cuantitativa (TF-IDF) con el criterio del LLM para
-    generar una recomendacion final en lenguaje natural sobre que
-    temas profundizar primero.
+    Le pasa al LLM el contenido completo de las notas (no solo una lista de
+    terminos) y le pide que actue como experto en la certificacion: que
+    identifique, con su propio conocimiento del dominio completo (no solo lo
+    que aparece en las notas), que temas son mas importantes para la
+    certificacion y cuales estan debiles o ausentes en las notas del
+    estudiante. La densidad TF-IDF se pasa solo como señal de apoyo.
     """
     ranking_summary = "\n".join(
-        f"- {ts.note_title}: terminos clave = {', '.join(ts.top_terms) or '(sin datos suficientes)'}, "
-        f"densidad = {ts.score:.3f}"
+        f"- {ts.note_title}: terminos mas distintivos = "
+        f"{', '.join(ts.top_terms) or '(sin datos suficientes)'}, densidad = {ts.score:.3f}"
         for ts in topic_scores
     )
+    notes_text = "\n\n".join(
+        f"### {title}\n{content}" for title, content in notes_content.items()
+    )
 
-    system_prompt = """\
-Eres un asistente de estudio que ayuda a un estudiante universitario a \
-priorizar que temas repasar primero, basandote en un analisis de \
-densidad de conceptos de sus propias notas (ya calculado).
+    system_prompt = f"""\
+Eres un experto certificado en "{cert_name}", con dominio completo de TODOS \
+los temas que tipicamente cubre esta certificacion, no solo de lo que \
+aparece en las notas de un estudiante en particular.
 
-Usa el ranking cuantitativo como base, pero puedes ajustar el orden si \
-detectas que un tema con menor densidad es un prerequisito conceptual \
-de otros temas mas densos. Explica brevemente el porque de cada \
-prioridad (1-2 oraciones por tema).
+Vas a leer las notas de estudio completas de un estudiante para esta \
+certificacion. Tu tarea, actuando como ese experto:
+
+1. Identifica, usando tu propio conocimiento del dominio completo de la \
+certificacion, cuales son los temas/subtemas MAS IMPORTANTES a los que el \
+estudiante deberia prestar mas atencion (los que mas peso tienen en un \
+examen o dominio real de la certificacion, no solo los mas mencionados).
+2. Señala explicitamente que temas estan debiles, superficiales o \
+directamente ausentes en las notas, comparado con lo que un experto \
+esperaria que el estudiante domine.
+3. Da una lista priorizada (mas importante primero) de en que enfocar el \
+estudio, con 1-3 oraciones de justificacion por cada tema.
+
+Usa la densidad de conceptos (calculada automaticamente via TF-IDF) solo \
+como señal de apoyo, no como criterio principal: un tema puede ser critico \
+para la certificacion aunque aparezca poco en las notas (senal de que esta \
+descuidado), y viceversa.
+
+Señal de densidad de conceptos por nota:
+{ranking_summary}
 """
-    user_prompt = f"Ranking de densidad de conceptos por nota:\n\n{ranking_summary}"
+    user_prompt = f"Notas completas del estudiante para esta certificacion:\n\n{notes_text}"
 
-    response = provider.generate_text(system_prompt, user_prompt, max_tokens=1200)
+    response = provider.generate_text(system_prompt, user_prompt, max_tokens=6000)
     return response.text
 
 
