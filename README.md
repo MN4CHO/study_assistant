@@ -54,6 +54,7 @@ python3 main.py
 Flags disponibles:
 - `--skip-handwriting`: omite la transcripcion de imagenes.
 - `--skip-analysis`: omite el analisis de priorizacion de temas.
+- `--sync-notion`: sincroniza `Tareas/001_Tareas.md` con tu base de datos de Notion (ver seccion 7).
 
 El cuestionario (`Q_<NombreApunte>.md`) queda junto al apunte original en el
 vault. El reporte de priorizacion (`priorizacion_temas.md`) queda junto a
@@ -107,8 +108,47 @@ study_assistant/
 | `topic_prioritizer.py` | **Identificacion de patrones** |
 | `topic_prioritizer.suggest_priorities()` (recomendaciones basadas en tu propio historial de apuntes) | **Personalizacion** |
 
-## 7. Proximos pasos (Fase 2, fuera del alcance actual)
+## 7. Sincronizacion con Notion
 
-- Sincronizacion Obsidian (plugin Tasks) -> Notion, usando el LLM para
-  decidir los valores correctos de cada propiedad de la base de Notion
-  (categoria de **Toma de decisiones**).
+Las tareas se escriben en `Tareas/001_Tareas.md` (dentro del vault) usando
+la sintaxis del plugin **Tasks** de Obsidian; `sync/` las parsea y las
+sube a una base de datos de Notion, usando el LLM para decidir los
+valores de las propiedades que no vengan explicitas en el texto
+(categoria de **Toma de decisiones**).
+
+**Configuracion (una sola vez):**
+
+1. Instala el plugin **Tasks** en Obsidian y en Settings > Tasks >
+   Statuses agrega los estados personalizados documentados en
+   `data/vault/Tareas/001_Tareas.md` (para que el checkbox refleje el
+   mismo Status que usas en Notion).
+2. Crea una integracion en https://www.notion.so/my-integrations,
+   comparte tu base de datos con ella ("Compartir" -> invitar la
+   integracion), y copia el token y el ID de la base a tu `.env`:
+   ```
+   NOTION_API_KEY=tu_token
+   NOTION_DATABASE_ID=tu_database_id
+   ```
+   Si los nombres de tus propiedades no coinciden con los defaults
+   (`Status`, `Fecha`, `Prioridad`, `Contexto`, `Energía`, `Proyecto`,
+   `URL`), sobreescribelos con `NOTION_PROP_*` (ver `.env.example`).
+
+**Uso:**
+
+```bash
+python3 main.py --sync-notion
+```
+
+Escribe tus tareas en `Tareas/001_Tareas.md` con el formato descrito en
+ese mismo archivo, y cada corrida con `--sync-notion` crea o actualiza la
+pagina correspondiente en Notion (usa el marcador invisible
+`%%notion:<page_id>%%` para no duplicar).
+
+**Codigo:**
+
+```
+sync/
+├── task_parser.py   # texto Markdown -> objetos Task (checkbox, fechas, prioridad, tags)
+├── notion_client.py # Task -> propiedades de Notion, segun el esquema real de la base
+└── notion_sync.py   # orquesta: parsea, completa campos faltantes via LLM, sube, reescribe el archivo
+```

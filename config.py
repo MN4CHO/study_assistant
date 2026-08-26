@@ -63,6 +63,29 @@ TEMAS_IMPORTANTES_DIR_NAME = os.getenv("TEMAS_IMPORTANTES_DIR_NAME", "Temas_impo
 # son contenido de estudio (ej. la nota de recoleccion del plugin Tasks).
 EXCLUDED_DIR_NAME = os.getenv("EXCLUDED_DIR_NAME", "Tareas")
 
+# --- Sincronizacion Notion (plugin Tasks -> Notion, ver sync/) ---
+# Archivo dentro de EXCLUDED_DIR_NAME donde el usuario escribe todas sus
+# tareas (sintaxis del plugin Tasks de Obsidian). Ese archivo, y no el
+# vault entero, es lo que se sincroniza con Notion.
+TAREAS_FILENAME = os.getenv("TAREAS_FILENAME", "001_Tareas.md")
+TAREAS_FILE = OBSIDIAN_VAULT_PATH / EXCLUDED_DIR_NAME / TAREAS_FILENAME
+
+NOTION_API_KEY = os.getenv("NOTION_API_KEY", "")
+NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID", "")
+
+# Nombres reales de las propiedades en la base de datos de Notion. Se
+# pueden sobreescribir via .env si tu base usa otros nombres (la propiedad
+# de tipo "title" se detecta sola, sin importar como se llame).
+NOTION_PROPERTY_MAP = {
+    "status": os.getenv("NOTION_PROP_STATUS", "Status"),
+    "fecha": os.getenv("NOTION_PROP_FECHA", "Fecha"),
+    "prioridad": os.getenv("NOTION_PROP_PRIORIDAD", "Prioridad"),
+    "contexto": os.getenv("NOTION_PROP_CONTEXTO", "Contexto"),
+    "energia": os.getenv("NOTION_PROP_ENERGIA", "Energía"),
+    "proyecto": os.getenv("NOTION_PROP_PROYECTO", "Proyecto"),
+    "url": os.getenv("NOTION_PROP_URL", "URL"),
+}
+
 
 def get_text_api_key(provider_name: str) -> str:
     return {
