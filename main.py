@@ -39,17 +39,17 @@ def build_providers():
 
 
 def process_handwritten_notes(vision_provider) -> None:
-    """Paso 2: transcribe imagenes pendientes y las guarda como .md en el vault."""
+    """Paso 2: digitaliza y mejora las imagenes pendientes, guardando cada
+    .md junto a la imagen de origen."""
     transcriptions = transcribe_folder(vision_provider, config.HANDWRITTEN_NOTES_PATH)
     if not transcriptions:
         return
 
-    print(f"Transcribiendo {len(transcriptions)} nota(s) manuscrita(s)...")
-    config.OBSIDIAN_VAULT_PATH.mkdir(parents=True, exist_ok=True)
-    for name, markdown_text in transcriptions.items():
-        dest = config.OBSIDIAN_VAULT_PATH / f"{name}_transcrita.md"
+    print(f"Digitalizando y mejorando {len(transcriptions)} nota(s) manuscrita(s)...")
+    for image_path, markdown_text in transcriptions.items():
+        dest = image_path.with_name(f"{image_path.stem}_transcrita.md")
         dest.write_text(markdown_text, encoding="utf-8")
-        print(f"  -> guardado: {dest.name}")
+        print(f"  -> guardado: {dest}")
 
 
 def process_note(text_provider, note) -> None:
@@ -126,6 +126,8 @@ def main():
                          help="Omite el paso de transcripcion de notas manuscritas")
     parser.add_argument("--skip-analysis", action="store_true",
                          help="Omite el analisis de priorizacion de temas")
+    parser.add_argument("--skip-quiz", action="store_true",
+                         help="Omite la generacion de cuestionarios para notas nuevas/modificadas")
     parser.add_argument("--sync-notion", action="store_true",
                          help="Sincroniza Tareas/001_Tareas.md con la base de datos de Notion")
     args = parser.parse_args()
@@ -139,6 +141,9 @@ def main():
     pending_notes = get_pending_notes(config.OBSIDIAN_VAULT_PATH, config.SYNC_STATE_FILE)
     if not pending_notes:
         print("No hay notas nuevas o modificadas desde la ultima corrida.")
+    elif args.skip_quiz:
+        print(f"{len(pending_notes)} nota(s) nueva(s)/modificada(s) detectada(s), "
+              f"se omite la generacion de cuestionarios (--skip-quiz).")
     else:
         print(f"{len(pending_notes)} nota(s) nueva(s)/modificada(s) detectada(s).")
         for note in pending_notes:
