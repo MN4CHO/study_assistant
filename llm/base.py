@@ -48,6 +48,8 @@ class LLMResponse:
     model: str
     input_tokens: int = 0
     output_tokens: int = 0
+    # True si el proveedor corto la respuesta por limite de tokens (quedo incompleta).
+    truncated: bool = False
 
 
 class LLMProvider(ABC):

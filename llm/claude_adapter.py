@@ -75,6 +75,7 @@ class ClaudeProvider(LLMProvider):
             model=self.model,
             input_tokens=message.usage.input_tokens,
             output_tokens=message.usage.output_tokens,
+            truncated=message.stop_reason == "max_tokens",
         )
 
 

@@ -72,16 +72,24 @@ class GeminiProvider(LLMProvider):
             contents=[image_part, user_prompt],
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
-                max_output_tokens=max(max_tokens, 4000),
+                max_output_tokens=max(max_tokens, 8000),
             ),
         ))
         usage = response.usage_metadata
         return LLMResponse(
-            text=response.text,
+            text=response.text or "",
             model=self.model,
             input_tokens=getattr(usage, "prompt_token_count", 0) or 0,
             output_tokens=getattr(usage, "candidates_token_count", 0) or 0,
+            truncated=_finish_reason(response) == "MAX_TOKENS",
         )
+
+
+def _finish_reason(response) -> str:
+    try:
+        return str(response.candidates[0].finish_reason.name)
+    except (AttributeError, IndexError, TypeError):
+        return ""
 
 
 def _guess_mime_type(path: str) -> str:

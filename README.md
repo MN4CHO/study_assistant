@@ -53,6 +53,7 @@ python3 main.py
 
 Flags disponibles:
 - `--skip-handwriting`: omite la transcripcion de imagenes.
+- `--skip-quiz`: omite la generacion de cuestionarios para notas nuevas/modificadas.
 - `--skip-analysis`: omite el analisis de priorizacion de temas.
 - `--sync-notion`: sincroniza `Tareas/001_Tareas.md` con tu base de datos de Notion (ver seccion 7).
 
